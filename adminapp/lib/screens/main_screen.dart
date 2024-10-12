@@ -10,18 +10,23 @@ class MainScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Main Screen', style: TextStyle(color: Colors.white),),
+        title: Text(
+          'Main Screen',
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: Colors.green, // Set AppBar color
       ),
       body: Container(
         color: Colors.green[50], // Light green background
         padding: const EdgeInsets.all(16.0), // Add some padding
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start, // Align items to the start
+          crossAxisAlignment:
+              CrossAxisAlignment.start, // Align items to the start
           children: [
             // Row to align the Add Product button and Products text
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween, // Space between button and text
+              mainAxisAlignment: MainAxisAlignment
+                  .spaceBetween, // Space between button and text
               children: [
                 Text(
                   'Products',
@@ -40,10 +45,13 @@ class MainScreen extends StatelessWidget {
                     );
                   },
                   style: TextButton.styleFrom(
-                    foregroundColor: Colors.white, backgroundColor: Colors.green, // Button text color
-                    padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0), // Padding
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.green, // Button text color
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 10.0, horizontal: 20.0), // Padding
                   ),
-                  child: Text('Add Product', style: TextStyle(fontSize: 16)), // Button text style
+                  child: Text('Add Product',
+                      style: TextStyle(fontSize: 16)), // Button text style
                 ),
               ],
             ),
@@ -67,11 +75,23 @@ class MainScreen extends StatelessWidget {
                     itemCount: snapshot.data!.docs.length,
                     itemBuilder: (context, index) => ProductCard(
                       snap: snapshot.data!.docs[index].data(),
+                      productId: snapshot.data!.docs[index].id,
                     ),
                   );
                 },
               ),
             ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Spacer(), // Đẩy Text ra cuối dòng
+                Text(
+                  'See all products',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+
             const SizedBox(height: 20), // Space before orders section
             Text(
               'Orders',

@@ -1,4 +1,5 @@
 import 'package:adminapp/screens/add_product_screen.dart';
+import 'package:adminapp/widgets/order_card.dart';
 import 'package:adminapp/widgets/product_card.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -99,6 +100,28 @@ class MainScreen extends StatelessWidget {
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
                 color: Colors.green[800], // Darker green for text
+              ),
+            ),
+            Container(
+              height: 230,
+              child: StreamBuilder(
+                stream:
+                    FirebaseFirestore.instance.collection('orders').snapshots(),
+                builder: (context,
+                    AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>>
+                        snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  return ListView.builder(
+                    scrollDirection: Axis.vertical,
+                    itemCount: snapshot.data!.docs.length,
+                    itemBuilder: (context, index) => OrderCard(
+                      snap: snapshot.data!.docs[index].data(),
+                      productId: snapshot.data!.docs[index].id,
+                    ),
+                  );
+                },
               ),
             ),
           ],

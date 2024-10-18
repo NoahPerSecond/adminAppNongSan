@@ -66,7 +66,26 @@ class _EditProductScreenState extends State<EditProductScreen> {
           .collection('product')
           .doc(widget.productId)
           .delete();
+      // Bước 2: Lấy danh sách người dùng
+    QuerySnapshot userSnapshot = await FirebaseFirestore.instance.collection('users').get();
 
+    for (var userDoc in userSnapshot.docs) {
+      String userId = userDoc.id;
+
+      // Bước 3: Cập nhật mảng cart của người dùng để xóa productId
+      await FirebaseFirestore.instance.collection('users').doc(userId).update({
+        'cart': FieldValue.arrayRemove([widget.productId]),
+      }).catchError((error) {
+        print('Failed to remove product from cart for user $userId: $error');
+      });
+
+      // Bước 3 (tiếp theo): Cập nhật mảng favourites của người dùng để xóa productId
+      await FirebaseFirestore.instance.collection('users').doc(userId).update({
+        'favourites': FieldValue.arrayRemove([widget.productId]),
+      }).catchError((error) {
+        print('Failed to remove product from favourites for user $userId: $error');
+      });
+    }
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Sản phẩm đã được xóa thành công!')),
       );
@@ -111,64 +130,49 @@ class _EditProductScreenState extends State<EditProductScreen> {
   }
 
   Future<void> _updateProduct() async {
-    String name = nameController.text;
-    String description = descriptionController.text;
-    String type = typeController.text;
-    String productionPlace = productionPlaceController.text;
+  String name = nameController.text;
+  String description = descriptionController.text;
+  String type = typeController.text;
+  String productionPlace = productionPlaceController.text;
 
-    // Nếu người dùng không nhập lại giá, giữ nguyên giá hiện tại
-    double? price = double.tryParse(priceController.text);
-    double? discountedPrice =
-        isDiscounted ? double.tryParse(discountedPriceController.text) : null;
+  // Trả về giá số nguyên không định dạng
+  double price = double.tryParse(priceController.text) ?? 0.0;
+  double discountedPrice = isDiscounted
+      ? (double.tryParse(discountedPriceController.text) ?? 0.0)
+      : 0.0;
 
-    // Nếu price là null và người dùng không sửa, giữ nguyên giá cũ
-    DocumentSnapshot productDoc = await FirebaseFirestore.instance
-        .collection('product')
-        .doc(widget.productId)
-        .get();
-    double existingPrice = productDoc['price'];
-    double? existingDiscountedPrice = productDoc['newPrice'];
-
-    if (price == null) {
-      price = existingPrice; // giữ nguyên giá cũ
-    }
-
-    if (isDiscounted && discountedPrice == null) {
-      discountedPrice = existingDiscountedPrice; // giữ nguyên giá giảm cũ
-    }
-
-    String? imageUrl;
-    if (_image != null) {
-      imageUrl = await uploadImageToFirebase(File(_image!.path));
-    } else {
-      imageUrl = existingImageUrl; // Sử dụng ảnh cũ nếu không có ảnh mới
-    }
-
-    Map<String, dynamic> updatedData = {
-      'name': name,
-      'description': description,
-      'category': type,
-      'origin': productionPlace,
-      'stockQuantity': int.tryParse(quantityController.text) ?? 0,
-      'price': price,
-      'newPrice': isDiscounted ? discountedPrice : null,
-      'isSale': isDiscounted,
-      'imageUrl': imageUrl,
-    };
-
-    await FirebaseFirestore.instance
-        .collection('product')
-        .doc(widget.productId)
-        .update(updatedData);
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Sản phẩm đã được cập nhật thành công!')),
-    );
-
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => MainScreen()),
-    );
+  String? imageUrl;
+  if (_image != null) {
+    imageUrl = await uploadImageToFirebase(File(_image!.path));
+  } else {
+    imageUrl = existingImageUrl; // Sử dụng ảnh cũ nếu không có ảnh mới
   }
+
+  Map<String, dynamic> updatedData = {
+    'name': name,
+    'description': description,
+    'category': type,
+    'origin': productionPlace,
+    'stockQuantity': int.tryParse(quantityController.text) ?? 0,
+    'price': price, // Lưu giá dưới dạng số
+    'newPrice': isDiscounted ? discountedPrice : null, // Lưu giá giảm cũng dưới dạng số
+    'isSale': isDiscounted,
+    'imageUrl': imageUrl,
+  };
+
+  await FirebaseFirestore.instance
+      .collection('product')
+      .doc(widget.productId)
+      .update(updatedData);
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(content: Text('Sản phẩm đã được cập nhật thành công!')),
+  );
+
+  Navigator.of(context).pushReplacement(
+    MaterialPageRoute(builder: (context) => MainScreen()),
+  );
+}
 
   @override
   Widget build(BuildContext context) {

@@ -53,11 +53,19 @@ class _AddProductScreenState extends State<AddProductScreen> {
     String productionPlace = productionPlaceController.text;
     int quantity = int.tryParse(quantityController.text) ?? 0; // Default to 0 if parsing fails
     double price = double.tryParse(priceController.text) ?? 0.0; // Default to 0.0 if parsing fails
-    double discountedPrice = isDiscounted ? (double.tryParse(discountedPriceController.text) ?? 0.0) : 0.0;
+    double? discountedPrice = isDiscounted ? (double.tryParse(discountedPriceController.text) ?? 0.0) : null;
 
     if (_image == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Vui lòng chọn hình ảnh sản phẩm!')),
+      );
+      return;
+    }
+
+    // Kiểm tra đầu vào
+    if (name.isEmpty || description.isEmpty || type.isEmpty || productionPlace.isEmpty || quantity <= 0 || price <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vui lòng điền đầy đủ thông tin sản phẩm!')),
       );
       return;
     }
@@ -73,11 +81,11 @@ class _AddProductScreenState extends State<AddProductScreen> {
       'category': type,
       'origin': productionPlace,
       'stockQuantity': quantity,
-      'price': price,
-      'newPrice': isDiscounted ? discountedPrice : null,
+      'price': price, // Lưu giá dưới dạng số
+      'newPrice': isDiscounted ? discountedPrice : null, // Lưu giá giảm cũng dưới dạng số hoặc null
       'isSale': isDiscounted,
       'imageUrl': imageUrl,
-      'rating': 0
+      'rating': 0,
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -106,11 +114,16 @@ class _AddProductScreenState extends State<AddProductScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Thêm sản phẩm',style: TextStyle(color: Colors.white),),
+        title: const Text('Thêm sản phẩm', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.green, // Màu xanh lá cây cho AppBar
-        leading: IconButton(icon: Icon(Icons.arrow_back_sharp,color: Colors.white,),onPressed: (){Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(
-                        builder: (context) =>MainScreen()));},),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_sharp, color: Colors.white),
+          onPressed: () {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => MainScreen()),
+            );
+          },
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -152,7 +165,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green, // Màu xanh lá cây cho nút
                   ),
-                  child: const Text('Chọn hoặc chụp ảnh',style: TextStyle(color: Colors.white)),
+                  child: const Text('Chọn hoặc chụp ảnh', style: TextStyle(color: Colors.white)),
                 ),
               ),
               const SizedBox(height: 16),
@@ -177,7 +190,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
               const SizedBox(height: 16),
               _buildTextField(priceController, 'Giá sản phẩm', isNumber: true),
               const SizedBox(height: 16),
-
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -193,12 +205,10 @@ class _AddProductScreenState extends State<AddProductScreen> {
                   ),
                 ],
               ),
-
               if (isDiscounted) ...[
                 const SizedBox(height: 16),
                 _buildTextField(discountedPriceController, 'Giá sau giảm', isNumber: true),
               ],
-
               const SizedBox(height: 24),
               Center(
                 child: ElevatedButton(
@@ -206,7 +216,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                   ),
-                  child: const Text('Lưu sản phẩm',style: TextStyle(color: Colors.white)),
+                  child: const Text('Lưu sản phẩm', style: TextStyle(color: Colors.white)),
                 ),
               ),
             ],

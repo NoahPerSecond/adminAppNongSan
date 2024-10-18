@@ -2,6 +2,7 @@ import 'package:adminapp/screens/edit_product_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class ProductCard extends StatefulWidget {
   final snap;
@@ -14,6 +15,7 @@ class ProductCard extends StatefulWidget {
 }
 
 class _ProductCardState extends State<ProductCard> {
+  final formatCurrency = NumberFormat.currency(locale: 'vi_VN', symbol: '');
   // bool _isFavorite = false;
 
   // @override
@@ -60,7 +62,7 @@ class _ProductCardState extends State<ProductCard> {
   //         .collection('favourites')
   //         .doc(widget.productId)
   //         .set({
-            
+
   //       'productId': widget.productId,
   //       "category": category,
   //       "description": description,
@@ -84,9 +86,12 @@ class _ProductCardState extends State<ProductCard> {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () => Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(
-                        builder: (context) => EditProductScreen(productId: widget.productId!,),
-                      ),),
+        MaterialPageRoute(
+          builder: (context) => EditProductScreen(
+            productId: widget.productId!,
+          ),
+        ),
+      ),
       child: Stack(
         children: [
           Padding(
@@ -143,17 +148,25 @@ class _ProductCardState extends State<ProductCard> {
                             ? Column(
                                 children: [
                                   Text(
-                                    widget.snap['newPrice'].toString(),
+                                    formatCurrency
+                                            .format(widget.snap['newPrice'])
+                                            .toString() +
+                                        ' VND',
                                     style: TextStyle(
-                                        color: Colors.green,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500),
+                                      color: Colors.green,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
                                   Text(
-                                    widget.snap['price'].toString(),
+                                    formatCurrency
+                                            .format(widget.snap['price'])
+                                            .toString() +
+                                        ' VND',
                                     style: TextStyle(
-                                        decoration: TextDecoration.lineThrough),
-                                  )
+                                      decoration: TextDecoration.lineThrough,
+                                    ),
+                                  ),
                                 ],
                               )
                             : Column(
@@ -161,7 +174,12 @@ class _ProductCardState extends State<ProductCard> {
                                   SizedBox(
                                     height: 22,
                                   ),
-                                  Text(widget.snap['price'].toString()),
+                                  Text(
+                                    formatCurrency
+                                            .format(widget.snap['price'])
+                                            .toString() +
+                                        ' VND',
+                                  ),
                                 ],
                               ),
                       ],

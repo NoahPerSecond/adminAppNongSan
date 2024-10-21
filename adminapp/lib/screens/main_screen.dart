@@ -102,27 +102,26 @@ class MainScreen extends StatelessWidget {
                 color: Colors.green[800], // Darker green for text
               ),
             ),
-            Container(
-              height: 230,
-              child: StreamBuilder(
-                stream:
-                    FirebaseFirestore.instance.collection('orders').snapshots(),
-                builder: (context,
-                    AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>>
-                        snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  return ListView.builder(
+            StreamBuilder(
+              stream:
+                  FirebaseFirestore.instance.collection('orders').snapshots(),
+              builder: (context,
+                  AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>>
+                      snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                return Expanded(
+                  child: ListView.builder(
                     scrollDirection: Axis.vertical,
                     itemCount: snapshot.data!.docs.length,
                     itemBuilder: (context, index) => OrderCard(
                       snap: snapshot.data!.docs[index].data(),
-                      productId: snapshot.data!.docs[index].id,
+                      ordertId: snapshot.data!.docs[index].id,
                     ),
-                  );
-                },
-              ),
+                  ),
+                );
+              },
             ),
           ],
         ),

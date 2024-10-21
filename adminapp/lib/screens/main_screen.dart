@@ -104,7 +104,7 @@ class MainScreen extends StatelessWidget {
             ),
             StreamBuilder(
               stream:
-                  FirebaseFirestore.instance.collection('orders').snapshots(),
+                  FirebaseFirestore.instance.collection('orders').orderBy('timestamp', descending: true).snapshots(),
               builder: (context,
                   AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>>
                       snapshot) {

@@ -85,7 +85,7 @@ class _ProductCardState extends State<ProductCard> {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => Navigator.of(context).pushReplacement(
+      onTap: () => Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => EditProductScreen(
             productId: widget.productId!,
@@ -94,99 +94,96 @@ class _ProductCardState extends State<ProductCard> {
       ),
       child: Stack(
         children: [
-          Padding(
-            padding: EdgeInsets.only(left: 8),
-            child: Container(
-              width: 160,
-              decoration: BoxDecoration(
-                  border: Border.all(width: 0.3),
-                  borderRadius: BorderRadius.circular(20)),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Stack(
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(20),
-                            topRight: Radius.circular(20)),
-                        child: Image(
-                          width: 160,
-                          height: 120,
-                          fit: BoxFit.cover,
-                          image: NetworkImage(
-                            widget.snap['imageUrl'].toString(),
-                          ),
+          Card(
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(20),
+                          topRight: Radius.circular(20)),
+                      child: Image(
+                        width: 180,
+                        height: 110,
+                        fit: BoxFit.cover,
+                        image: NetworkImage(
+                          widget.snap['imageUrl'].toString(),
                         ),
                       ),
+                    ),
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        overflow: TextOverflow.ellipsis,
+                        widget.snap['name'],
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w500),
+                      ),
+                      Row(
+                        children: List.generate(5, (index) {
+                          return Icon(
+                            size: 15,
+                            Icons.star,
+                            color: index < widget.snap['rating']
+                                ? Colors.yellow
+                                : Colors.grey,
+                          );
+                        }),
+                      ),
+                      (widget.snap['isSale'])
+                          ? Column(
+                              children: [
+                                Text(
+                                  formatCurrency
+                                          .format(widget.snap['newPrice'])
+                                          .toString() +
+                                      ' VND',
+                                  style: TextStyle(
+                                    color: Colors.green,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                Text(
+                                  formatCurrency
+                                          .format(widget.snap['price'])
+                                          .toString() +
+                                      ' VND',
+                                  style: TextStyle(
+                                    decoration: TextDecoration.lineThrough,
+                                  ),
+                                ),
+                              ],
+                            )
+                          : Column(
+                              children: [
+                                SizedBox(
+                                  height: 22,
+                                ),
+                                Text(
+                                  formatCurrency
+                                          .format(widget.snap['price'])
+                                          .toString() +
+                                      ' VND',
+                                ),
+                              ],
+                            ),
                     ],
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          overflow: TextOverflow.ellipsis,
-                          widget.snap['name'],
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.w500),
-                        ),
-                        Row(
-                          children: List.generate(5, (index) {
-                            return Icon(
-                              size: 15,
-                              Icons.star,
-                              color: index < widget.snap['rating']
-                                  ? Colors.yellow
-                                  : Colors.grey,
-                            );
-                          }),
-                        ),
-                        (widget.snap['isSale'])
-                            ? Column(
-                                children: [
-                                  Text(
-                                    formatCurrency
-                                            .format(widget.snap['newPrice'])
-                                            .toString() +
-                                        ' VND',
-                                    style: TextStyle(
-                                      color: Colors.green,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  Text(
-                                    formatCurrency
-                                            .format(widget.snap['price'])
-                                            .toString() +
-                                        ' VND',
-                                    style: TextStyle(
-                                      decoration: TextDecoration.lineThrough,
-                                    ),
-                                  ),
-                                ],
-                              )
-                            : Column(
-                                children: [
-                                  SizedBox(
-                                    height: 22,
-                                  ),
-                                  Text(
-                                    formatCurrency
-                                            .format(widget.snap['price'])
-                                            .toString() +
-                                        ' VND',
-                                  ),
-                                ],
-                              ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
           // Positioned(

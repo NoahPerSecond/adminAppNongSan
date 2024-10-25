@@ -1,4 +1,5 @@
 import 'package:adminapp/screens/add_product_screen.dart';
+import 'package:adminapp/screens/product_screen.dart';
 import 'package:adminapp/widgets/order_card.dart';
 import 'package:adminapp/widgets/product_card.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -39,7 +40,7 @@ class MainScreen extends StatelessWidget {
                 ),
                 TextButton(
                   onPressed: () {
-                    Navigator.of(context).pushReplacement(
+                    Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (context) => AddProductScreen(),
                       ),
@@ -86,9 +87,16 @@ class MainScreen extends StatelessWidget {
             Row(
               children: [
                 Spacer(), // Đẩy Text ra cuối dòng
-                Text(
-                  'See all products',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                InkWell(
+                  onTap: ()=>Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => ProductScreen(),
+                      ),
+                    ),
+                  child: Text(
+                    'See all products',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
                 ),
               ],
             ),

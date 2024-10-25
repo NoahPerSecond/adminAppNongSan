@@ -12,29 +12,30 @@ class OrderCard extends StatefulWidget {
 }
 
 class _OrderCardState extends State<OrderCard> {
-  bool isProcessed = false; // Biến trạng thái để theo dõi xem đơn hàng đã được xử lý chưa
+  bool isProcessed = false; // Track if the order has been processed
 
   @override
   void initState() {
     super.initState();
-    // Kiểm tra xem đơn hàng đã được xử lý chưa
-    isProcessed = widget.snap['orderStatus'] == 'Xác nhận' || widget.snap['orderStatus'] == 'Từ chối';
+    // Check if the order has been processed or if it is in the pending state
+    isProcessed = widget.snap['orderStatus'] == 'Xác nhận' ||
+                  widget.snap['orderStatus'] == 'Từ chối';
   }
 
   void _updateOrderStatus(BuildContext context, String status) async {
-    // Lấy thông tin sản phẩm để trừ số lượng
+    // Get product information to adjust the stock quantity
     DocumentSnapshot productSnapshot = await FirebaseFirestore.instance
         .collection('product')
-        .doc(widget.snap['productId']) // Lấy productId từ đơn hàng
+        .doc(widget.snap['productId']) // Get productId from order
         .get();
 
     if (productSnapshot.exists) {
       int currentStock = productSnapshot['stockQuantity'] ?? 0;
       int orderQuantity = widget.snap['quantity'] ?? 0;
 
-      // Kiểm tra số lượng tồn kho
+      // Check stock quantity
       if (currentStock >= orderQuantity && status == 'Xác nhận') {
-        // Trừ số lượng sản phẩm
+        // Deduct the product quantity
         await FirebaseFirestore.instance
             .collection('product')
             .doc(widget.snap['productId'])
@@ -45,20 +46,43 @@ class _OrderCardState extends State<OrderCard> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Số lượng sản phẩm không đủ để xác nhận đơn hàng.")),
         );
-        return; // Không thực hiện cập nhật trạng thái đơn hàng
+        return; // Do not update order status
       }
     }
 
-    // Cập nhật trạng thái đơn hàng
-    await FirebaseFirestore.instance.collection('orders').doc(widget.ordertId).update({
+    // Update order status to 'Xác nhận'
+    await FirebaseFirestore.instance
+        .collection('orders')
+        .doc(widget.ordertId)
+        .update({
       'orderStatus': status,
     }).then((_) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Đơn hàng đã được $status")),
       );
       setState(() {
-        isProcessed = true; // Cập nhật trạng thái sau khi xử lý
+        isProcessed = true; // Update status after processing
       });
+
+      // After 10 seconds, update the status to 'Đang giao'
+      if (status == 'Xác nhận') {
+        Future.delayed(const Duration(seconds: 10), () async {
+          await FirebaseFirestore.instance
+              .collection('orders')
+              .doc(widget.ordertId)
+              .update({
+            'orderStatus': 'Đang giao',
+          }).then((_) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Đơn hàng đã được chuyển sang trạng thái Đang giao.")),
+            );
+          }).catchError((error) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Lỗi: $error")),
+            );
+          });
+        });
+      }
     }).catchError((error) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Lỗi: $error")),
@@ -97,7 +121,7 @@ class _OrderCardState extends State<OrderCard> {
                   Text("Số điện thoại: ${widget.snap['recipientPhoneNum'] ?? 'N/A'}",
                       style: const TextStyle(fontSize: 16)),
                   const SizedBox(height: 5),
-                  Text("Tên sản phẩm: ${widget.snap['productName'] ?? 'N/A'}", // Hiển thị tên sản phẩm
+                  Text("Tên sản phẩm: ${widget.snap['productName'] ?? 'N/A'}",
                       style: const TextStyle(fontSize: 16)),
                   const SizedBox(height: 5),
                   Text("Tổng cộng: ${widget.snap['totalAmount']} VND",
@@ -117,8 +141,8 @@ class _OrderCardState extends State<OrderCard> {
             Column(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                // Ẩn nút nếu đơn hàng đã được xử lý
-                if (!isProcessed) ...[
+                // Show buttons only if the order is pending
+                if (widget.snap['orderStatus'] == 'Chờ xác nhận') ...[
                   ElevatedButton(
                     onPressed: () => _updateOrderStatus(context, 'Xác nhận'),
                     style: ElevatedButton.styleFrom(

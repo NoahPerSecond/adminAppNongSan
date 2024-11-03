@@ -30,21 +30,33 @@ class _AddProductScreenState extends State<AddProductScreen> {
   final TextEditingController discountedPriceController = TextEditingController();
 
   Future<void> _pickImage(ImageSource source) async {
-    final pickedFile = await picker.pickImage(source: source);
-    if (pickedFile != null) {
-      setState(() {
-        _image = pickedFile;
-      });
-    }
+  final pickedFile = await picker.pickImage(source: source);
+  if (pickedFile != null) {
+    setState(() {
+      _image = pickedFile;
+    });
+    print('Picked image path: ${_image!.path}'); // Debugging statement
+  } else {
+    print('No image selected.');
   }
+}
+
 
   Future<String> uploadImageToFirebase(File imageFile) async {
-    String fileName = Uuid().v4(); // Generate a unique filename
+  try {
+    String fileName = Uuid().v4();
     Reference storageRef = FirebaseStorage.instance.ref().child('images/$fileName.jpg');
     UploadTask uploadTask = storageRef.putFile(imageFile);
     TaskSnapshot taskSnapshot = await uploadTask;
     return await taskSnapshot.ref.getDownloadURL();
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error uploading image: $e')),
+    );
+    return '';
   }
+}
+
 
   Future<void> _saveProduct() async {
     String name = nameController.text;
@@ -85,7 +97,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
       'newPrice': isDiscounted ? discountedPrice : null, // Lưu giá giảm cũng dưới dạng số hoặc null
       'isSale': isDiscounted,
       'imageUrl': imageUrl,
-      'rating': 0,
+      'createdAt': FieldValue.serverTimestamp(),
     });
 
     ScaffoldMessenger.of(context).showSnackBar(

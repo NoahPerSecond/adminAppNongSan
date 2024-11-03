@@ -19,7 +19,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
   XFile? _image;
   final picker = ImagePicker();
   bool isDiscounted = false;
-
+  double _averageRating = 0.0;
+  int _totalRatings = 0; // Count of total ratings
   // Controllers
   final TextEditingController nameController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
@@ -38,6 +39,30 @@ class _EditProductScreenState extends State<EditProductScreen> {
   void initState() {
     super.initState();
     _loadProductData();
+    calculateAverageRating();
+  }
+
+  Future<void> calculateAverageRating() async {
+    try {
+      QuerySnapshot ratingSnapshot = await FirebaseFirestore.instance
+          .collection('product')
+          .doc(widget.productId)
+          .collection('ratings')
+          .get();
+
+      if (ratingSnapshot.docs.isNotEmpty) {
+        int totalRating = 0;
+        ratingSnapshot.docs.forEach((doc) {
+          totalRating += doc['rating'] as int;
+        });
+        setState(() {
+          _averageRating = totalRating / ratingSnapshot.docs.length;
+          _totalRatings = ratingSnapshot.docs.length;
+        });
+      }
+    } catch (e) {
+      print('Error calculating average rating: $e');
+    }
   }
 
   Future<void> _deleteProduct() async {
@@ -250,6 +275,38 @@ class _EditProductScreenState extends State<EditProductScreen> {
                               height: 200,
                             ),
                     ),
+                    const SizedBox(height: 16),
+                    Row(
+                        children: [
+                          Row(
+                            children: List.generate(5, (index) {
+                              return Icon(
+                                Icons.star,
+                                size: 30,
+                                color: index < _averageRating
+                                    ? Colors.yellow
+                                    : Colors.grey,
+                              );
+                            }),
+                          ),
+                          SizedBox(
+                            width: 5,
+                          ),
+                          Text(
+                            _averageRating.toStringAsFixed(1),
+                            style: const TextStyle(
+                                fontSize: 20, color: Colors.grey),
+                          ),
+                          SizedBox(
+                            width: 5,
+                          ),
+                          Text(
+                            '( ' + _totalRatings.toString() + ' đánh giá )',
+                            style: const TextStyle(
+                                fontSize: 20, color: Colors.grey),
+                          )
+                        ],
+                      ),
                     const SizedBox(height: 16),
                     _buildTextField(nameController, 'Tên sản phẩm'),
                     const SizedBox(height: 16),

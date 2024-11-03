@@ -7,6 +7,27 @@ import 'package:flutter/material.dart';
 
 class MainScreen extends StatelessWidget {
   const MainScreen({super.key});
+//   Future<void> addCreatedAtToAllProducts() async {
+//   try {
+//     // Get a reference to the 'product' collection
+//     CollectionReference productsCollection = FirebaseFirestore.instance.collection('product');
+    
+//     // Fetch all documents from the collection
+//     QuerySnapshot querySnapshot = await productsCollection.get();
+    
+//     // Iterate through each document
+//     for (var doc in querySnapshot.docs) {
+//       // Update each document to include the 'createdAt' field
+//       await productsCollection.doc(doc.id).update({
+//         'createdAt': FieldValue.serverTimestamp(), // Add current timestamp
+//       });
+//     }
+    
+//     print('All products updated with createdAt field successfully.');
+//   } catch (e) {
+//     print('Error updating products: $e');
+//   }
+// }
 
   @override
   Widget build(BuildContext context) {
@@ -45,6 +66,7 @@ class MainScreen extends StatelessWidget {
                         builder: (context) => AddProductScreen(),
                       ),
                     );
+                    // addCreatedAtToAllProducts();
                   },
                   style: TextButton.styleFrom(
                     foregroundColor: Colors.white,
@@ -62,7 +84,7 @@ class MainScreen extends StatelessWidget {
               height: 230,
               child: StreamBuilder(
                 stream: FirebaseFirestore.instance
-                    .collection('product')
+                    .collection('product').orderBy('createdAt')
                     .snapshots(),
                 builder: (context,
                     AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>>
@@ -119,13 +141,17 @@ class MainScreen extends StatelessWidget {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                return Expanded(
-                  child: ListView.builder(
-                    scrollDirection: Axis.vertical,
-                    itemCount: snapshot.data!.docs.length,
-                    itemBuilder: (context, index) => OrderCard(
-                      snap: snapshot.data!.docs[index].data(),
-                      ordertId: snapshot.data!.docs[index].id,
+                return Flexible(
+                  child: Scrollbar(
+                    thumbVisibility: true,
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      scrollDirection: Axis.vertical,
+                      itemCount: snapshot.data!.docs.length,
+                      itemBuilder: (context, index) => OrderCard(
+                        snap: snapshot.data!.docs[index].data(),
+                        ordertId: snapshot.data!.docs[index].id,
+                      ),
                     ),
                   ),
                 );

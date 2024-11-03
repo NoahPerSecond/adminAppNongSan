@@ -1,11 +1,10 @@
 import 'package:adminapp/screens/edit_product_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class ProductCard extends StatefulWidget {
-  final snap;
+  final Map<String, dynamic> snap;
   final String? productId;
 
   ProductCard({super.key, required this.snap, this.productId});
@@ -16,71 +15,38 @@ class ProductCard extends StatefulWidget {
 
 class _ProductCardState extends State<ProductCard> {
   final formatCurrency = NumberFormat.currency(locale: 'vi_VN', symbol: '');
-  // bool _isFavorite = false;
+  double _averageRating = 0.0;
+  int _totalRatings = 0; // Count of total ratings
 
-  // @override
-  // void initState() {
-  //   // TODO: implement initState
-  //   super.initState();
-  //   checkIfFavorite();
-  // }
+  @override
+  void initState() {
+    super.initState();
+    calculateAverageRating();
+    print(_averageRating);
+  }
 
-  //  Future<void> checkIfFavorite() async {
-  //   User? user = FirebaseAuth.instance.currentUser;
-  //   if (user != null) {
-  //     DocumentSnapshot doc = await FirebaseFirestore.instance
-  //         .collection('users')
-  //         .doc(user.uid)
-  //         .collection('favourites')
-  //         .doc(widget.productId)
-  //         .get();
+  Future<void> calculateAverageRating() async {
+    try {
+      QuerySnapshot ratingSnapshot = await FirebaseFirestore.instance
+          .collection('product')
+          .doc(widget.productId)
+          .collection('ratings')
+          .get();
 
-  //     if (doc.exists) {
-  //       setState(() {
-  //         _isFavorite = true; // Product is already a favorite
-  //       });
-  //     }
-  //   }
-  // }
-
-  // Future<void> addToFavourites() async {
-  //   User? user = FirebaseAuth.instance.currentUser;
-  //   final String category = widget.snap["category"];
-  //   final String description= widget.snap["description"];
-  //   final String imageUrl= widget.snap["imageUrl"];
-  //   final String name= widget.snap["name"];
-  //   final String origin= widget.snap["origin"];
-  //   final int stockQuantity= widget.snap["stockQuantity"];
-  //   final String price= widget.snap["price"];
-  //   final String newPrice= widget.snap["newPrice"];
-  //   final bool isSale = widget.snap["isSale"];
-  //   final int rating = widget.snap["rating"];
-  //   try {
-  //     await FirebaseFirestore.instance
-  //         .collection('users')
-  //         .doc(user!.uid)
-  //         .collection('favourites')
-  //         .doc(widget.productId)
-  //         .set({
-
-  //       'productId': widget.productId,
-  //       "category": category,
-  //       "description": description,
-  //       "imageUrl": imageUrl,
-  //       "name": name,
-  //       "origin": origin,
-  //       "stockQuantity": stockQuantity,
-  //       "price" : price,
-  //       "newPrice" : newPrice,
-  //       "isSale" : isSale,
-  //       "rating" : rating,
-  //       "quantity" : 1,
-  //     });
-  //     print('Product added to favourites');
-  //   } catch (e) {
-  //     print('Failed to add to favourites: $e');
-  //   }
-  // }
+      if (ratingSnapshot.docs.isNotEmpty) {
+        int totalRating = 0;
+        ratingSnapshot.docs.forEach((doc) {
+          totalRating += doc['rating'] as int;
+        });
+        setState(() {
+          _averageRating = totalRating / ratingSnapshot.docs.length;
+          _totalRatings = ratingSnapshot.docs.length;
+        });
+      }
+    } catch (e) {
+      print('Error calculating average rating: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -102,83 +68,79 @@ class _ProductCardState extends State<ProductCard> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Stack(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(20),
-                          topRight: Radius.circular(20)),
-                      child: Image(
-                        width: 180,
-                        height: 110,
-                        fit: BoxFit.cover,
-                        image: NetworkImage(
-                          widget.snap['imageUrl'].toString(),
-                        ),
-                      ),
-                    ),
-                  ],
+                ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20)),
+                  child: Image.network(
+                    widget.snap['imageUrl'],
+                    width: 200,
+                    height: 110,
+                    fit: BoxFit.cover,
+                  ),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        overflow: TextOverflow.ellipsis,
                         widget.snap['name'],
-                        style: TextStyle(
+                        style: const TextStyle(
                             fontSize: 16, fontWeight: FontWeight.w500),
+                        overflow: TextOverflow.ellipsis,
                       ),
                       Row(
-                        children: List.generate(5, (index) {
-                          return Icon(
-                            size: 15,
-                            Icons.star,
-                            color: index < widget.snap['rating']
-                                ? Colors.yellow
-                                : Colors.grey,
-                          );
-                        }),
+                        children: [
+                          Row(
+                            children: List.generate(5, (index) {
+                              return Icon(
+                                Icons.star,
+                                size: 15,
+                                color: index < _averageRating
+                                    ? Colors.yellow
+                                    : Colors.grey,
+                              );
+                            }),
+                          ),
+                          SizedBox(
+                            width: 5,
+                          ),
+                          Text(
+                            _averageRating.toStringAsFixed(1),
+                            style: const TextStyle(
+                                fontSize: 14, color: Colors.grey),
+                          ),
+                          
+                          // Text(
+                          //   '( ' + _totalRatings.toString() + ' đánh giá )',
+                          //   style: const TextStyle(
+                          //       fontSize: 14, color: Colors.grey),
+                          // )
+                        ],
                       ),
-                      (widget.snap['isSale'])
+                      widget.snap['isSale']
                           ? Column(
                               children: [
                                 Text(
-                                  formatCurrency
-                                          .format(widget.snap['newPrice'])
-                                          .toString() +
-                                      ' VND',
-                                  style: TextStyle(
+                                  '${formatCurrency.format(widget.snap['newPrice'])} VND',
+                                  style: const TextStyle(
                                     color: Colors.green,
                                     fontSize: 16,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
                                 Text(
-                                  formatCurrency
-                                          .format(widget.snap['price'])
-                                          .toString() +
-                                      ' VND',
-                                  style: TextStyle(
+                                  '${formatCurrency.format(widget.snap['price'])} VND',
+                                  style: const TextStyle(
                                     decoration: TextDecoration.lineThrough,
                                   ),
                                 ),
                               ],
                             )
-                          : Column(
-                              children: [
-                                SizedBox(
-                                  height: 22,
-                                ),
-                                Text(
-                                  formatCurrency
-                                          .format(widget.snap['price'])
-                                          .toString() +
-                                      ' VND',
-                                ),
-                              ],
+                          : Text(
+                              '${formatCurrency.format(widget.snap['price'])} VND',
+                              style: const TextStyle(fontSize: 16),
                             ),
                     ],
                   ),
@@ -186,38 +148,6 @@ class _ProductCardState extends State<ProductCard> {
               ],
             ),
           ),
-          // Positioned(
-          //     top: 6,
-          //     right: 6,
-          //     child: CircleAvatar(
-          //       radius: 18,
-          //       backgroundColor: Colors.white,
-          //       child: IconButton(
-          //           onPressed: () {
-          //             addToFavourites();
-          //           },
-          //           icon: Icon(
-          //                 _isFavorite
-          //                     ? Icons.favorite // Red icon if favorite
-          //                     : Icons.favorite_outline, // Outline if not favorite
-          //                 size: 20,
-          //                 color: _isFavorite ? Colors.red : Colors.black, // Change color based on state
-          //               )),
-          //     )),
-          // Positioned(
-          //     top: 80,
-          //     right: 6,
-          //     child: CircleAvatar(
-          //       radius: 18,
-          //       backgroundColor: Colors.white,
-          //       child: IconButton(
-          //           onPressed: () {},
-          //           icon: Icon(
-          //             Icons.shopping_cart_outlined,
-          //             size: 20,
-          //             // color: Colors.white,
-          //           )),
-          //     )),
         ],
       ),
     );

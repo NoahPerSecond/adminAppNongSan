@@ -21,6 +21,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
   bool isDiscounted = false;
   double _averageRating = 0.0;
   int _totalRatings = 0; // Count of total ratings
+  int saleCount = 0;
   // Controllers
   final TextEditingController nameController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
@@ -134,6 +135,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
       productionPlaceController.text = productData['origin'];
       quantityController.text = productData['stockQuantity'].toString();
       priceController.text = productData['price'].toString();
+      saleCount = productData['saleCount'];
       if (productData['isSale']) {
         discountedPriceController.text = productData['newPrice'].toString();
         isDiscounted = true;
@@ -194,9 +196,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
     const SnackBar(content: Text('Sản phẩm đã được cập nhật thành công!')),
   );
 
-  Navigator.of(context).pushReplacement(
-    MaterialPageRoute(builder: (context) => MainScreen()),
-  );
+  Navigator.pop(context);
 }
 
   @override
@@ -209,9 +209,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
         leading: IconButton(
           icon: Icon(Icons.arrow_back_sharp, color: Colors.white),
           onPressed: () {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (context) => MainScreen()),
-            );
+            Navigator.pop(context);
           },
         ),
       ),
@@ -307,6 +305,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
                           )
                         ],
                       ),
+                      Text(saleCount.toString() + ' lượt bán',style: const TextStyle(
+                                fontSize: 16)),
                     const SizedBox(height: 16),
                     _buildTextField(nameController, 'Tên sản phẩm'),
                     const SizedBox(height: 16),

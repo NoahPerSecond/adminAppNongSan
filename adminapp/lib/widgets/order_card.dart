@@ -77,8 +77,19 @@ class _OrderCardState extends State<OrderCard> {
             const SnackBar(content: Text("Đơn hàng đã được chuyển sang trạng thái Đang giao.")),
           );
 
-          // After 1 hour, update the status to 'Hoàn thành'
-          Future.delayed(const Duration(hours: 1), () async {
+          
+        }).catchError((error) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Lỗi: $error")),
+          );
+        });
+      });
+    }
+
+    if(status == 'Xác nhận')
+    {
+      // After 1 hour, update the status to 'Hoàn thành'
+          Future.delayed(const Duration(seconds: 20), () async {
             await FirebaseFirestore.instance
                 .collection('orders')
                 .doc(widget.ordertId)
@@ -94,12 +105,6 @@ class _OrderCardState extends State<OrderCard> {
               );
             });
           });
-        }).catchError((error) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Lỗi: $error")),
-          );
-        });
-      });
     }
   }).catchError((error) {
     ScaffoldMessenger.of(context).showSnackBar(

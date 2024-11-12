@@ -98,6 +98,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
       'isSale': isDiscounted,
       'imageUrl': imageUrl,
       'createdAt': FieldValue.serverTimestamp(),
+      'saleCount': 0
     });
 
     ScaffoldMessenger.of(context).showSnackBar(

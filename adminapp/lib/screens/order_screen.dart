@@ -50,7 +50,7 @@ class _OrderScreenState extends State<OrderScreen> {
         ),
       ),
       body: StreamBuilder(
-        stream: FirebaseFirestore.instance.collection('orders').snapshots(),
+        stream: FirebaseFirestore.instance.collection('orders').orderBy('timestamp', descending: true).snapshots(),
         builder: (context, AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());

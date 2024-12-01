@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:adminapp/screens/add_product_screen.dart';
+import 'package:adminapp/screens/dashboard_screen.dart';
 import 'package:adminapp/screens/order_screen.dart';
 import 'package:adminapp/screens/product_screen.dart';
 import 'package:adminapp/widgets/order_card.dart';
@@ -22,22 +23,21 @@ class _MainScreenState extends State<MainScreen> {
   List<String> _bannerUrls = [];
 
   Future<void> _refreshScreen() async {
-  try {
-    // Gọi hàm tải dữ liệu cần thiết
-    await _loadBanners();
-    
+    try {
+      // Gọi hàm tải dữ liệu cần thiết
+      await _loadBanners();
 
-    // Hiển thị thông báo thành công (nếu cần)
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Screen refreshed successfully!')),
-    );
-  } catch (e) {
-    // Xử lý lỗi nếu có
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Error refreshing screen: $e')),
-    );
+      // Hiển thị thông báo thành công (nếu cần)
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Screen refreshed successfully!')),
+      );
+    } catch (e) {
+      // Xử lý lỗi nếu có
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error refreshing screen: $e')),
+      );
+    }
   }
-}
 
   Future<void> _loadBanners() async {
     final urls = await fetchLatestBannerUrls();
@@ -166,26 +166,25 @@ class _MainScreenState extends State<MainScreen> {
   //   }
   // }
   Future<void> _pickImage(int index) async {
-  final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-  if (pickedFile != null) {
-    setState(() {
-      _imageFiles[index] = File(pickedFile.path);
-    });
+    final XFile? pickedFile =
+        await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _imageFiles[index] = File(pickedFile.path);
+      });
 
-    // Tự động tải ảnh lên sau khi chọn
-    await _uploadImage(index);
-    setState(() {
-      
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Image uploaded successfully!')),
-    );
-  } else {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('No image selected!')),
-    );
+      // Tự động tải ảnh lên sau khi chọn
+      await _uploadImage(index);
+      setState(() {});
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Image uploaded successfully!')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No image selected!')),
+      );
+    }
   }
-}
 
 //   Future<void> _pickImage(int index) async {
 //   final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
@@ -200,7 +199,6 @@ class _MainScreenState extends State<MainScreen> {
 //     );
 //   }
 // }
-
 
   // Function to upload the image to Firebase Storage
   Future<void> _uploadImage(int index) async {
@@ -218,6 +216,8 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
+  
+
   @override
   void initState() {
     // TODO: implement initState
@@ -234,6 +234,13 @@ class _MainScreenState extends State<MainScreen> {
           'Main Screen',
           style: TextStyle(color: Colors.white),
         ),
+        actions: [
+          InkWell(
+            child: Icon(Icons.menu),
+            onTap: ()=>Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => DashboardScreen())),
+          )
+        ],
         backgroundColor: Colors.green, // Set AppBar color
       ),
       body: Padding(
@@ -281,7 +288,8 @@ class _MainScreenState extends State<MainScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 20), // Space between row and product list
+                const SizedBox(
+                    height: 20), // Space between row and product list
                 Container(
                   height: 230,
                   child: StreamBuilder(
@@ -320,13 +328,13 @@ class _MainScreenState extends State<MainScreen> {
                       ),
                       child: Text(
                         'See all products',
-                        style:
-                            TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ],
                 ),
-            
+
                 const SizedBox(height: 20), // Space before orders section
                 Text(
                   'Orders',
@@ -377,8 +385,8 @@ class _MainScreenState extends State<MainScreen> {
                       ),
                       child: Text(
                         'See all orders',
-                        style:
-                            TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ],
@@ -458,4 +466,3 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 }
-
